@@ -1,0 +1,116 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 10
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "38020599-c45b-4478-b84c-9932d6b2c455",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://www.objectifgard.com/",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        128,
+        0
+      ],
+      "id": "133ceab6-c80e-4e3e-a4a1-7acf9dc0b2b6",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json.data;\n\nconst links = [...html.matchAll(/href=\"([^\"]+)\"/g)];\n\nlet articleUrl = null;\n\nfor (const l of links) {\n  const url = l[1];\n\n  // filtre précis\n  if (\n    url.includes(\"/actualites/fait-du-jour\")\n  ) {\n    articleUrl = url;\n    break;\n  }\n}\n\nif (!articleUrl) {\n  throw new Error(\"Aucun 'fait-du-jour' trouvé dans actualités\");\n}\n\nif (!articleUrl.startsWith(\"http\")) {\n  articleUrl = \"https://www.objectifgard.com\" + articleUrl;\n}\n\nreturn [\n  {\n    json: {\n      articleUrl\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        0
+      ],
+      "id": "76bd9fea-f378-415f-86ea-49b0588f13ba",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "authentication": "webhook",
+        "content": "=Fait du jour : {{ $('Code in JavaScript').item.json.articleUrl }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.discord",
+      "typeVersion": 2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "3d3d2626-6821-42b1-91f5-01495db60279",
+      "name": "Discord",
+      "webhookId": "009bf944-f88c-4ca6-9eea-a58aa5468b82",
+      "credentials": {
+        "discordWebhookApi": {
+          "id": "mzmyla2zMr0619vM",
+          "name": "Discord Webhook account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Discord",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8f4da14b-c90e-4355-9795-17df89daa38b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3a679849dd689542fd0344f46b48bee0f3a5e8a8f14d1f195f8535529f39da5a"
+  },
+  "id": "QWy9HbzqnrzEd4Qm",
+  "tags": []
+}
